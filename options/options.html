@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DriveTrace Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>DriveTrace Settings</h1>
+    <label class="setting"><span><strong>Enable Stats Bar</strong><small>Show document metrics above Google Docs.</small></span><input id="enableStatsBar" type="checkbox"></label>
+    <label class="setting"><span><strong>Enable Suspicious Flags</strong><small>Show process-pattern badges in the sidebar and stats bar.</small></span><input id="enableFlags" type="checkbox"></label>
+    <label class="setting range"><span><strong>Writing session gap</strong><small>Start a new session after <b id="gap-value">5</b> minutes of inactivity.</small></span><input id="sessionGapMinutes" type="range" min="1" max="30" value="5"></label>
+    <label class="setting"><span><strong>Minimum paste size to flag</strong><small>Minimum inserted characters (also requires 20 words).</small></span><input id="minimumPasteSize" type="number" min="1" value="150"></label>
+    <p id="saved" role="status" aria-live="polite"></p>
+    <button id="clear" class="danger" type="button">Clear all stored data</button>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>
