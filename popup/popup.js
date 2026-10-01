@@ -35,7 +35,6 @@ if (!docs.length) {
     ).join("");
     return `<button class="document" data-url="${escapeHtml(doc.docUrl)}">
       <span class="doc-title">${escapeHtml((doc.docTitle || "Untitled document").slice(0, 40))}</span>
-      <span class="score ${color}">${Number(doc.score) || 0}</span>
       <span class="meta">${timeAgo(doc.analyzedAt)}</span><span class="flags">${flags}</span></button>`;
   }).join("");
   list.querySelectorAll(".document").forEach(row => row.addEventListener("click", () => {
