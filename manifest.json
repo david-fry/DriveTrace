@@ -3,8 +3,8 @@
   "name": "DriveTrace",
   "version": "1.0.0",
   "description": "See the writing process behind Google Docs.",
-  "permissions": ["storage", "tabs", "activeTab"],
-  "host_permissions": ["*://docs.google.com/*", "*://classroom.google.com/*"],
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["*://docs.google.com/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
