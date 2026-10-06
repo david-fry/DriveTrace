@@ -9,7 +9,7 @@ export function injectStatsBar(analysis, enabled, openSidebar) {
   if (!enabled) return null;
   const bar = document.createElement("div");
   bar.id = "drivetrace-stats-bar";
-  const insufficient = analysis.totalRevisionCount < 5;
+  const insufficient = (analysis.sessions?.length || 0) === 0;
   const totalWritingTime = analysis.sessions.reduce((sum, session) => sum + session.durationMs, 0);
   const flags = analysis.flags.slice(0, 3).map(flag =>
     `<span class="dt-flag ${flag.severity}" title="${escapeAttribute(flag.explanation)}">${escapeText(flag.name)}</span>`
