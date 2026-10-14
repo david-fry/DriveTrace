@@ -28,6 +28,7 @@ export async function saveDocument(analysis) {
 export async function getSettings() {
   const result = await chrome.storage.local.get(SETTINGS_KEY);
   return {
+    enabled: true,
     enableStatsBar: true,
     enableFlags: true,
     sessionGapMinutes: 5,

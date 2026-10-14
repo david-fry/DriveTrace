@@ -5,7 +5,7 @@
  * @param {"document"|"presentation"} documentType Google editor type.
  * @returns {Promise<{revisionCount:number, operations:Object[], truncated:boolean}>} Revision data.
  */
-export async function fetchRevisions(docId, userId, authToken, documentType = "document") {
+export async function fetchRevisions(docId, userId, authToken, documentType = "document", signal) {
   const kind = documentType === "presentation" ? "presentation" : "document";
   const BASE = "https://docs.google.com/" + kind + "/d/";
   let start = 1;
@@ -24,7 +24,7 @@ export async function fetchRevisions(docId, userId, authToken, documentType = "d
     if (authToken) query.set("token", authToken);
     if (userId) query.set("ouid", userId);
     const response = await fetch(`${BASE}${encodeURIComponent(docId)}/revisions/tiles?${query}`, {
-      credentials: "include"
+      credentials: "include", signal
     });
     if (response.status === 403) throw new Error("User does not have edit access to this document.");
     if (!response.ok) throw new Error(`Revision request failed (${response.status}).`);
@@ -60,7 +60,7 @@ export async function fetchRevisions(docId, userId, authToken, documentType = "d
   if (authToken) params.set("token", authToken);
   if (userId) params.set("ouid", userId);
   const response = await fetch(`${BASE}${encodeURIComponent(docId)}/revisions/load?${params}`, {
-    credentials: "include"
+    credentials: "include", signal
   });
   if (response.status === 403) throw new Error("User does not have edit access to this document.");
   if (!response.ok) throw new Error(`Revision content request failed (${response.status}).`);

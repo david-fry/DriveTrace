@@ -1,4 +1,4 @@
-import { getDocuments } from "../shared/storage.js";
+import { getDocuments, getSettings, saveSettings, SETTINGS_KEY } from "../shared/storage.js";
 
 /** Escape document-provided text for HTML rendering.
  * @param {string} value Text to escape.
@@ -22,6 +22,37 @@ function timeAgo(timestamp) {
   const months = Math.floor(days / 30);
   return `${months} month${months === 1 ? "" : "s"} ago`;
 }
+
+const toggle = document.querySelector("#enable-toggle");
+const toggleStatus = document.querySelector("#toggle-status");
+let enabled = (await getSettings()).enabled !== false;
+function renderToggle() {
+  toggle.textContent = enabled ? "Enabled" : "Disabled";
+  toggle.setAttribute("aria-checked", String(enabled));
+  toggle.title = enabled ? "Disable DriveTrace" : "Enable DriveTrace";
+}
+renderToggle();
+toggle.disabled = false;
+toggle.addEventListener("click", async () => {
+  toggle.disabled = true;
+  toggleStatus.textContent = "";
+  try {
+    const nextEnabled = !enabled;
+    await saveSettings({ enabled: nextEnabled });
+    enabled = nextEnabled;
+    renderToggle();
+  } catch (error) {
+    toggleStatus.textContent = "Could not save. Try again.";
+    console.error("DriveTrace could not change its enabled setting:", error);
+  } finally {
+    toggle.disabled = false;
+  }
+});
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local" || !changes[SETTINGS_KEY]) return;
+  enabled = changes[SETTINGS_KEY].newValue?.enabled !== false;
+  renderToggle();
+});
 
 const list = document.querySelector("#documents");
 const docs = Object.values(await getDocuments()).sort((a, b) => b.analyzedAt - a.analyzedAt);

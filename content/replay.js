@@ -48,7 +48,7 @@ export function createReplay(root, analysis) {
     slider.value = String(cursor);
   };
   const tick = now => {
-    if (!playing) return;
+    if (!playing || !root.isConnected) { playing = false; return; }
     if (cursor >= ops.length) { playing = false; return; }
     if (!lastStep || now - lastStep >= Math.max(16, 160 / Number(speed.value))) {
       cursor += 1;

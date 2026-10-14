@@ -15,6 +15,8 @@ backend, login, OAuth flow, dependencies, or build step.
 5. Open the DriveTrace toolbar popup to see recently analyzed documents. Use
    **Settings** in the popup to configure session and paste thresholds.
 
+Use the Enabled/Disabled button beside the popup header to turn DriveTrace on or off across all documents. Disabling hides its document UI and pauses revision requests; saved analyses remain available.
+
 The extension requests Google Docs revision history using the current browser
 session. Revision history may be unavailable for documents or accounts where
 Google does not permit access. Data remains in the local Chrome profile; use the
@@ -87,4 +89,4 @@ push it to managed Chrome users.
 
 Run the regression checks with Node.js 22 or newer:
 
-    node --test tests/slides.test.mjs
+    node --test tests/slides.test.mjs tests/toggle.test.mjs

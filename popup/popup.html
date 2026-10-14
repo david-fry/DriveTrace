@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <header><div><h1>DriveTrace</h1><p>Recent documents</p></div></header>
+  <header><div><h1>DriveTrace</h1><p>Recent documents</p></div><div class="header-controls"><button id="enable-toggle" type="button" role="switch" aria-label="Enable DriveTrace" aria-checked="true" disabled>Enabled</button><span id="toggle-status" role="status"></span></div></header>
   <main id="documents" aria-live="polite"></main>
   <footer><button id="settings" type="button">Settings</button></footer>
   <script type="module" src="popup.js"></script>

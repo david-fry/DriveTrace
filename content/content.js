@@ -20,7 +20,7 @@
     import(`${baseUrl}sidebar.js`),
     import(chrome.runtime.getURL("shared/storage.js"))
   ]).then(async ([fetchModule, analyzeModule, statsModule, sidebarModule, storage]) => {
-    const settings = await storage.getSettings();
+    let settings = await storage.getSettings();
     const title = document.querySelector(".docs-title-input")?.value
       || document.title.replace(/ - Google (Docs|Slides)$/, "") || "Untitled document";
     const pageHtml = document.documentElement.innerHTML;
@@ -31,20 +31,25 @@
       || null;
     let refreshTimer = null;
     let refreshInFlight = false;
+    let activeRequest = null;
 
     const refreshAnalysis = async () => {
-      if (refreshInFlight) return;
+      if (settings.enabled === false || refreshInFlight) return;
+      const controller = new AbortController();
+      activeRequest = controller;
       try {
         if (isReplayTabActive()) return;
         refreshInFlight = true;
         const sidebarWasOpen = document.querySelector("#drivetrace-sidebar")?.classList.contains("open") ?? false;
         const activeTab = document.querySelector("#drivetrace-sidebar .dt-tabs button.active")?.dataset.tab || "overview";
-        const fetched = await fetchModule.fetchRevisions(docId, userId, authToken, documentType);
+        const fetched = await fetchModule.fetchRevisions(docId, userId, authToken, documentType, controller.signal);
+        if (controller.signal.aborted || settings.enabled === false) return;
         const analysis = analyzeModule.analyzeDocument({
           ...fetched, docId, documentType, docTitle: title, docUrl: window.location.href
         }, settings);
         document.querySelector("#drivetrace-error")?.remove();
         await storage.saveDocument(analysis);
+        if (controller.signal.aborted || settings.enabled === false) return;
         if (fetched.truncated) analysis.truncated = true;
         if (!settings.enableFlags) analysis.flags = [];
         const sidebar = sidebarModule.createSidebar(analysis);
@@ -53,6 +58,7 @@
         wireSidebarRefreshControls(sidebar.element);
         statsModule.injectStatsBar(analysis, settings.enableStatsBar, sidebar.open);
       } catch (error) {
+        if (controller.signal.aborted || settings.enabled === false) return;
         console.error("DriveTrace could not analyze this document:", error);
         const notice = document.createElement("div");
         notice.id = "drivetrace-error";
@@ -61,6 +67,8 @@
         document.body.append(notice);
       } finally {
         refreshInFlight = false;
+        if (activeRequest === controller) activeRequest = null;
+        if (controller.signal.aborted && settings.enabled !== false) void refreshAnalysis();
       }
     };
 
@@ -72,7 +80,7 @@
     };
 
     const startRefresh = () => {
-      if (refreshTimer || isReplayTabActive()) return;
+      if (settings.enabled === false || refreshTimer || isReplayTabActive()) return;
       refreshTimer = window.setInterval(refreshAnalysis, 5000);
     };
 
@@ -91,7 +99,32 @@
       });
     }
 
-    window.addEventListener("beforeunload", stopRefresh, { once: true });
+    const applySettings = next => {
+      const wasEnabled = settings.enabled !== false;
+      settings = next;
+      if (settings.enabled === false) {
+        stopRefresh();
+        activeRequest?.abort();
+        document.querySelectorAll("#drivetrace-sidebar, #drivetrace-stats-bar, #drivetrace-error")
+          .forEach(element => element.remove());
+      } else if (!wasEnabled) {
+        void refreshAnalysis();
+        startRefresh();
+      }
+    };
+    const onSettingsChanged = (changes, area) => {
+      if (area === "local" && changes[storage.SETTINGS_KEY]) {
+        // A cleared settings record restores the enabled default.
+        applySettings(changes[storage.SETTINGS_KEY].newValue || {});
+      }
+    };
+    chrome.storage.onChanged.addListener(onSettingsChanged);
+    applySettings(await storage.getSettings());
+    window.addEventListener("beforeunload", () => {
+      stopRefresh();
+      activeRequest?.abort();
+      chrome.storage.onChanged.removeListener(onSettingsChanged);
+    }, { once: true });
     try {
       await refreshAnalysis();
       startRefresh();
