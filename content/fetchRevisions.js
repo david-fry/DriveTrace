@@ -1,12 +1,13 @@
-const BASE = "https://docs.google.com/document/d/";
-
-/** Fetch revision tiles and changelog for an accessible Google Doc.
- * @param {string} docId Google Docs document ID.
+/** Fetch revision tiles and changelog for an accessible Google Doc or Slides presentation.
+ * @param {string} docId Google Drive file ID.
  * @param {string|null} userId Optional numeric Google user ID.
  * @param {string|null} authToken Optional page auth token.
+ * @param {"document"|"presentation"} documentType Google editor type.
  * @returns {Promise<{revisionCount:number, operations:Object[], truncated:boolean}>} Revision data.
  */
-export async function fetchRevisions(docId, userId, authToken) {
+export async function fetchRevisions(docId, userId, authToken, documentType = "document") {
+  const kind = documentType === "presentation" ? "presentation" : "document";
+  const BASE = "https://docs.google.com/" + kind + "/d/";
   let start = 1;
   let revisionCount = 0;
   let truncated = false;
@@ -28,13 +29,13 @@ export async function fetchRevisions(docId, userId, authToken) {
     if (response.status === 403) throw new Error("User does not have edit access to this document.");
     if (!response.ok) throw new Error(`Revision request failed (${response.status}).`);
     const tileText = await response.text();
-    const tiles = JSON.parse(tileText.replace(/^\)\]\}'\n?/, ""));
+    const tiles = JSON.parse(tileText.replace(/^\)\]\}'\s*/, ""));
     const data = tiles.tileInfo || tiles[0]?.tileInfo || [];
     const end = Number(data.at(-1)?.end || 0);
     revisionCount = Math.max(revisionCount, end);
     if (!end || end < start + 1499) break;
-    if (start === 1501) {
-      truncated = end > 3000;
+    if (end >= 3000) {
+      truncated = true;
       break;
     }
     start = end + 1;
@@ -64,6 +65,6 @@ export async function fetchRevisions(docId, userId, authToken) {
   if (response.status === 403) throw new Error("User does not have edit access to this document.");
   if (!response.ok) throw new Error(`Revision content request failed (${response.status}).`);
   const text = await response.text();
-  const payload = JSON.parse(text.replace(/^\)\]\}'\n?/, ""));
+  const payload = JSON.parse(text.replace(/^\)\]\}'\s*/, ""));
   return { revisionCount, operations: payload.changelog || [], truncated };
 }

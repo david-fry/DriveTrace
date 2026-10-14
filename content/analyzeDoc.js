@@ -8,7 +8,7 @@ import { detectFlags } from "../shared/flags.js";
  * @returns {Object} Complete document analysis.
  */
 export function analyzeDocument(input, settings = {}) {
-  const operations = parseChangelog(input.operations, settings.minimumPasteSize ?? 150);
+  const operations = parseChangelog(input.operations, settings.minimumPasteSize ?? 150, input.documentType);
   const sessionGap = (settings.sessionGapMinutes ?? 5) * 60000;
   const sessions = [];
   for (const operation of operations) {
@@ -25,7 +25,7 @@ export function analyzeDocument(input, settings = {}) {
     session.durationMs = session.endTime - session.startTime;
     session.operationCount += 1;
     if (operation.type === "insert") session.charsInserted += operation.content.length;
-    else session.charsDeleted += operation.deleteLength || operation.content.length;
+    else if (operation.type === "delete") session.charsDeleted += operation.deleteLength || operation.content.length;
   }
   for (const session of sessions) {
     session.peakCharsPerMin = session.durationMs
@@ -38,6 +38,7 @@ export function analyzeDocument(input, settings = {}) {
   }));
   const analysis = {
     docId: input.docId,
+    documentType: input.documentType || "document",
     docTitle: input.docTitle || "Untitled document",
     docUrl: input.docUrl || "",
     analyzedAt: Date.now(),

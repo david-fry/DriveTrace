@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "DriveTrace",
   "version": "1.0.1",
-  "description": "See the writing process behind Google Docs.",
+  "description": "See the writing process behind Google Docs and Slides.",
   "permissions": ["storage", "activeTab"],
   "host_permissions": ["*://docs.google.com/*"],
   "background": {
@@ -25,7 +25,7 @@
     "128": "icons/icon-128.png"
   },
   "content_scripts": [{
-    "matches": ["*://docs.google.com/document/d/*", "*://docs.google.com/document/u/*/d/*"],
+    "matches": ["*://docs.google.com/document/d/*", "*://docs.google.com/document/u/*/d/*", "*://docs.google.com/presentation/d/*", "*://docs.google.com/presentation/u/*/d/*"],
     "all_frames": true,
     "js": ["content/content.js"],
     "run_at": "document_idle"

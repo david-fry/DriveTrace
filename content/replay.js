@@ -1,4 +1,4 @@
-import { reconstruct, escapeHtml } from "./diff.js";
+import { reconstruct, escapeHtml, computeDiff, renderDiff } from "./diff.js";
 
 /** Replay revisions in a text surface with transport controls.
  * @param {Object} root Replay container.
@@ -18,10 +18,16 @@ export function createReplay(root, analysis) {
   let playing = false;
   let frame = 0;
   let lastStep = 0;
+  let highlightTimer = null;
   const show = () => {
     const operation = ops[cursor - 1];
     const previous = reconstruct(ops, Math.max(0, cursor - 1));
-    if (operation && cursor) {
+    window.clearTimeout(highlightTimer);
+    if (analysis.documentType === "presentation") {
+      view.innerHTML = renderDiff(computeDiff(previous, reconstruct(ops, cursor)));
+      const shownCursor = cursor;
+      highlightTimer = window.setTimeout(() => { view.textContent = reconstruct(ops, shownCursor); }, 500);
+    } else if (operation && cursor) {
       const index = Math.max(0, Math.min(previous.length, operation.position));
       const deleted = operation.type === "delete"
         ? operation.content || previous.slice(index, index + (operation.deleteLength || 0))
@@ -31,7 +37,8 @@ export function createReplay(root, analysis) {
         ? previous.slice(index) : previous.slice(index + deleted.length);
       const prefix = previous.slice(0, index);
       view.innerHTML = `${escapeHtml(prefix)}<span class="dt-replay-highlight ${operation.type}">${escapeHtml(changed)}</span>${escapeHtml(remaining)}`;
-      window.setTimeout(() => { view.textContent = reconstruct(ops, cursor); }, 500);
+      const shownCursor = cursor;
+      highlightTimer = window.setTimeout(() => { view.textContent = reconstruct(ops, shownCursor); }, 500);
     } else {
       view.textContent = reconstruct(ops, cursor);
     }

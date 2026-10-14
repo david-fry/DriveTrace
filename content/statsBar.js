@@ -22,7 +22,7 @@ export function injectStatsBar(analysis, enabled, openSidebar) {
       <span>Pastes: <b>${analysis.copyPasteEvents.length}</b></span>${flags}
       <button type="button" class="dt-view-process">▶ View Process</button>`;
   bar.querySelector(".dt-view-process")?.addEventListener("click", openSidebar);
-  const canvas = document.querySelector(".kix-appview-editor, .docs-editor-container, .kix-appview-editor-container");
+  const canvas = document.querySelector(".kix-appview-editor, .docs-editor-container, .kix-appview-editor-container, #docs-editor, .punch-viewer-container");
   (canvas?.parentElement || document.body).insertBefore(bar, canvas || null);
   return bar;
 }

@@ -1,5 +1,7 @@
 (() => {
-  const docId = window.location.pathname.match(/\/document\/(?:u\/\d+\/)?d\/([a-zA-Z0-9_-]+)/)?.[1];
+  const match = window.location.pathname.match(/\/(document|presentation)\/(?:u\/\d+\/)?d\/([a-zA-Z0-9_-]+)/);
+  const documentType = match?.[1];
+  const docId = match?.[2];
   if (!docId || !document.body) return;
   const guard = "data-drivetrace-loaded";
   if (document.body.hasAttribute(guard)) return;
@@ -20,7 +22,7 @@
   ]).then(async ([fetchModule, analyzeModule, statsModule, sidebarModule, storage]) => {
     const settings = await storage.getSettings();
     const title = document.querySelector(".docs-title-input")?.value
-      || document.title.replace(/ - Google Docs$/, "") || "Untitled document";
+      || document.title.replace(/ - Google (Docs|Slides)$/, "") || "Untitled document";
     const pageHtml = document.documentElement.innerHTML;
     const authToken = pageHtml.match(/"token":"(.*?)"/)?.[1] || null;
     const userId = pageHtml.match(/"docs-pid":"(.*?)"/)?.[1]
@@ -37,10 +39,11 @@
         refreshInFlight = true;
         const sidebarWasOpen = document.querySelector("#drivetrace-sidebar")?.classList.contains("open") ?? false;
         const activeTab = document.querySelector("#drivetrace-sidebar .dt-tabs button.active")?.dataset.tab || "overview";
-        const fetched = await fetchModule.fetchRevisions(docId, userId, authToken);
+        const fetched = await fetchModule.fetchRevisions(docId, userId, authToken, documentType);
         const analysis = analyzeModule.analyzeDocument({
-          ...fetched, docId, docTitle: title, docUrl: window.location.href
+          ...fetched, docId, documentType, docTitle: title, docUrl: window.location.href
         }, settings);
+        document.querySelector("#drivetrace-error")?.remove();
         await storage.saveDocument(analysis);
         if (fetched.truncated) analysis.truncated = true;
         if (!settings.enableFlags) analysis.flags = [];
@@ -54,6 +57,7 @@
         const notice = document.createElement("div");
         notice.id = "drivetrace-error";
         notice.textContent = "DriveTrace could not load revision history. Check that you can access this document, then reload.";
+        document.querySelector("#drivetrace-error")?.remove();
         document.body.append(notice);
       } finally {
         refreshInFlight = false;

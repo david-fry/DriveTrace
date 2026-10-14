@@ -1,7 +1,7 @@
 # DriveTrace
 
 DriveTrace is a local-only Chrome extension that helps teachers understand the
-writing process behind Google Docs. It analyzes revision history in the signed-in
+writing process behind Google Docs and Slides. It analyzes revision history in the signed-in
 browser and stores document summaries in `chrome.storage.local`; it has no
 backend, login, OAuth flow, dependencies, or build step.
 
@@ -11,7 +11,7 @@ backend, login, OAuth flow, dependencies, or build step.
 2. Open `chrome://extensions` in Chrome and enable **Developer mode**.
 3. Select **Load unpacked** and choose the repository folder containing
    `manifest.json`.
-4. Open a Google Doc using an account that can access its revision history.
+4. Open a Google Doc or Slides presentation using an account that can access its revision history.
 5. Open the DriveTrace toolbar popup to see recently analyzed documents. Use
    **Settings** in the popup to configure session and paste thresholds.
 
@@ -19,6 +19,11 @@ The extension requests Google Docs revision history using the current browser
 session. Revision history may be unavailable for documents or accounts where
 Google does not permit access. Data remains in the local Chrome profile; use the
 settings page's **Clear all stored data** button to remove it.
+
+Slides supports text-based replay and version comparison across slides, text boxes,
+and speaker notes. Slide creation, deletion, and reordering are reflected in replay;
+images, visual layout, animations, and formatting are not rendered. Writing metrics
+and paste flags describe text activity. History is limited to the first 3,000 revisions.
 
 ## Education deployment (self-host + Google Admin)
 
@@ -77,3 +82,9 @@ push it to managed Chrome users.
   (`chrome.storage.local`) and does not send data to a backend.
 - Google Admin UI labels can change; if wording differs, look for options to
   add a private extension using extension ID plus update URL.
+
+## Development checks
+
+Run the regression checks with Node.js 22 or newer:
+
+    node --test tests/slides.test.mjs

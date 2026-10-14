@@ -26,7 +26,7 @@ function timeAgo(timestamp) {
 const list = document.querySelector("#documents");
 const docs = Object.values(await getDocuments()).sort((a, b) => b.analyzedAt - a.analyzedAt);
 if (!docs.length) {
-  list.innerHTML = `<p class="empty">Open a Google Doc to see its writing-process analysis here.</p>`;
+  list.innerHTML = `<p class="empty">Open a Google Doc or Slides presentation to see its writing-process analysis here.</p>`;
 } else {
   list.innerHTML = docs.map(doc => {
     const color = doc.score <= 40 ? "danger" : doc.score <= 69 ? "warning" : "success";

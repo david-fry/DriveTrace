@@ -42,8 +42,8 @@
 #drivetrace-sidebar .dt-replay-status{font-size:11px;color:var(--color-neutral)}
 #drivetrace-sidebar .dt-replay-text,#drivetrace-sidebar .dt-diff-output{height:220px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#F9FAFB;border:1px solid var(--color-border);padding:10px;font:12px/1.55 ui-monospace,monospace}
 #drivetrace-sidebar .dt-replay-highlight{transition:background-color .5s ease}.dt-replay-highlight.insert{background:#DCFCE7}.dt-replay-highlight.delete{background:#FEE2E2;text-decoration:line-through}
-#drivetrace-sidebar .dt-diff-output ins{background:#DCFCE7;text-decoration:none}
-#drivetrace-sidebar .dt-diff-output del{background:#FEE2E2;text-decoration:line-through}
+#drivetrace-sidebar .dt-diff-output ins,#drivetrace-sidebar .dt-replay-text ins{background:#DCFCE7;text-decoration:none}
+#drivetrace-sidebar .dt-diff-output del,#drivetrace-sidebar .dt-replay-text del{background:#FEE2E2;text-decoration:line-through}
 #drivetrace-sidebar .dt-diff label{display:block;margin:8px 0}
 #drivetrace-sidebar button:focus-visible,#drivetrace-sidebar select:focus-visible,#drivetrace-stats-bar button:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}
 #drivetrace-error{position:fixed;z-index:1000000;top:40px;right:12px;background:#fff1f2;color:#991b1b;padding:12px;border:1px solid #fecdd3;border-radius:6px;max-width:320px}

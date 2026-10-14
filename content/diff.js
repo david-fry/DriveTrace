@@ -1,9 +1,16 @@
+import { createSlidesState, applySlidesOperation, renderSlidesState } from "./slides.js";
+
 /** Reconstruct a document by applying chronological operations up to a position.
  * @param {Object[]} operations Parsed operations.
  * @param {number} position Number of operations to apply.
  * @returns {string} Reconstructed text.
  */
 export function reconstruct(operations, position) {
+  if (operations[0]?.documentType === "presentation") {
+    const state = createSlidesState();
+    for (const operation of operations.slice(0, position)) applySlidesOperation(state, operation);
+    return renderSlidesState(state);
+  }
   let text = "";
   for (const operation of operations.slice(0, position)) {
     const index = Math.max(0, Math.min(text.length, operation.position));

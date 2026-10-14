@@ -1,3 +1,5 @@
+import { collectSlidesOperations } from "./slides.js";
+
 /** @typedef {{type:"insert"|"delete",opType:"insert"|"delete",content:string,textContent:string,position:number,startIdx:number,endIdx:number,timestamp:number,unixTimestamp:number,sessionIndex:number,authorId:string,userId:string,tab:string,isCopyPaste:boolean,isRevision:boolean}} TracedOp */
 
 /** Convert endpoint changes into ordered, annotated operations.
@@ -5,9 +7,10 @@
  * @param {number} minimumPasteSize Character threshold for paste detection.
  * @returns {TracedOp[]} Normalized operations in timestamp order.
  */
-export function parseChangelog(rawOperations, minimumPasteSize = 150) {
+export function parseChangelog(rawOperations, minimumPasteSize = 150, documentType = "document") {
   const flattened = [];
-  collectOperations(rawOperations, flattened);
+  if (documentType === "presentation") collectSlidesOperations(rawOperations, flattened);
+  else collectOperations(rawOperations, flattened);
   const operations = [];
   for (const raw of flattened) {
     const ty = String(raw.ty || raw.type || raw.changeType || raw.opType || "").toLowerCase();
@@ -15,7 +18,7 @@ export function parseChangelog(rawOperations, minimumPasteSize = 150) {
       ? "insert"
       : ty === "ds" || ty === "delete" || ty === "deletion" || ty === "deletetext"
         ? "delete"
-        : null;
+        : ty === "structure" ? "structure" : null;
     if (!type) continue;
     const content = type === "insert"
       ? String(raw.s || raw.text || raw.textContent || raw.content || raw.value || "")
@@ -28,6 +31,9 @@ export function parseChangelog(rawOperations, minimumPasteSize = 150) {
     const text = content.trim();
     const words = text.split(/\s+/).filter(Boolean).length;
     const common = {
+      ...(raw.documentType === "presentation" ? {
+        documentType: "presentation", elementId: raw.elementId, command: raw.command
+      } : {}),
       opType: type,
       type,
       content,
@@ -61,6 +67,7 @@ export function parseChangelog(rawOperations, minimumPasteSize = 150) {
     const op = operations[i];
     if (op.type !== "delete") continue;
     const rewritten = operations.slice(i + 1).find(next => next.type === "insert"
+      && next.elementId === op.elementId && next.tab === op.tab
       && next.position === op.position && next.timestamp - op.timestamp <= 300000);
     if (rewritten) {
       op.isRevision = true;
