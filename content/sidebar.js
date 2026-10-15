@@ -30,6 +30,7 @@ export function createSidebar(analysis) {
   aside.querySelector(".dt-pull-tab").addEventListener("click", () => setOpen(true));
   aside.querySelector(".dt-close").addEventListener("click", () => setOpen(false));
   aside.querySelectorAll(".dt-tabs button").forEach(button => button.addEventListener("click", () => {
+    aside.classList.toggle("dt-replay-active", button.dataset.tab === "replay");
     aside.querySelectorAll(".dt-tabs button").forEach(tab => tab.classList.toggle("active", tab === button));
     aside.querySelectorAll("[data-panel]").forEach(panel => { panel.hidden = panel.dataset.panel !== button.dataset.tab; });
   }));
